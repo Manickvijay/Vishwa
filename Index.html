@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AR Model Placement</title>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f0f0f0; }
+    model-viewer { width: 100vw; height: 100vh; }
+    button {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 20px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Model Viewer with AR placement -->
+  <model-viewer src="https://raw.githubusercontent.com/Manickvijay/Vishwa/main/ar1.glb"
+                alt="GitHub Hosted GLB Model"
+                auto-rotate
+                camera-controls
+                ar
+                ar-modes="scene-viewer webxr quick-look"
+                environment-image="neutral"
+                shadow-intensity="1"
+                ar-placement="wall"
+                ios-src="path/to/ios.usdz">
+  </model-viewer>
+
+  <!-- Button to start AR -->
+  <button id="ar-button">View in AR</button>
+
+  <script>
+    const modelViewer = document.querySelector('model-viewer');
+    const arButton = document.getElementById('ar-button');
+
+    arButton.addEventListener('click', () => {
+      modelViewer.activateAR();
+    });
+  </script>
+<script>
+  const modelViewer = document.querySelector('model-viewer');
+  const arButton = document.getElementById('ar-button');
+
+  arButton.addEventListener('click', async () => {
+    const canActivateAR = await modelViewer.canActivateAR;
+    if (canActivateAR) {
+      modelViewer.activateAR();
+    } else {
+      alert('AR is not supported on this device/browser.');
+    }
+  });
+</script>
+</body>
+  </html>
