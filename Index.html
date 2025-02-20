@@ -2,20 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AR Model Placement</title>
-  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <title>AR Model Viewer</title>
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  <script src="https://aframe.io/releases/1.2.0/aframe-ar.js"></script>
   <style>
-    body { 
-      margin: 0; 
-      display: flex; 
-      justify-content: center; 
-      align-items: center; 
-      height: 100vh; 
-      background-color: #f0f0f0; 
-    }
-    model-viewer { 
-      width: 100vw; 
-      height: 100vh; 
+    body {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f0f0f0;
     }
     button {
       position: absolute;
@@ -34,34 +31,57 @@
 </head>
 <body>
 
-  <!-- Model Viewer with AR placement -->
-  <model-viewer src="https://raw.githubusercontent.com/Manickvijay/Vishwa/main/ar1.glb"
-                alt="GitHub Hosted GLB Model"
-                auto-rotate
-                camera-controls
-                ar
-                ar-modes="webxr scene-viewer quick-look"
-                environment-image="neutral"
-                shadow-intensity="1"
-                ar-placement="wall"
-                ios-src="path/to/ios.usdz">
-    <!-- Fallback for unsupported devices -->
-    <button slot="ar-button" id="fallback-ar-button">AR Not Supported</button>
-  </model-viewer>
+  <!-- AR Scene using A-Frame with live camera feed -->
+  <a-scene embedded arjs="sourceType: webcam; detectionMode: mono; debugUIEnabled: false;">
+    
+    <!-- Camera with live video -->
+    <a-camera position="0 0 0" id="camera"></a-camera>
 
-  <!-- Button to start AR -->
+    <!-- AR model -->
+    <a-entity id="arModel"
+              gltf-model="https://raw.githubusercontent.com/Manickvijay/Vishwa/main/ar1.glb"
+              scale="0.5 0.5 0.5"
+              position="0 0 -3"
+              id="modelToPlace">
+    </a-entity>
+
+  </a-scene>
+
+  <!-- Button to activate AR mode -->
   <button id="ar-button">View in AR</button>
 
   <script>
-    const modelViewer = document.querySelector('model-viewer');
     const arButton = document.getElementById('ar-button');
+    const model = document.getElementById('modelToPlace');
 
-    arButton.addEventListener('click', async () => {
-      const canActivateAR = await modelViewer.canActivateAR;
-      if (canActivateAR) {
-        modelViewer.activateAR();
-      } else {
-        alert('AR is not supported on this device or browser.');
+    arButton.addEventListener('click', () => {
+      const scene = document.querySelector('a-scene');
+      scene.enterVR(); // Start AR with live camera
+    });
+
+    // Detect touch and place model at the point of touch
+    const camera = document.querySelector('#camera');
+
+    camera.addEventListener('click', (event) => {
+      // Get the touch position on the screen
+      const touchX = event.clientX / window.innerWidth * 2 - 1;
+      const touchY = -(event.clientY / window.innerHeight) * 2 + 1;
+
+      // Raycasting to calculate position in 3D space
+      const raycaster = new THREE.Raycaster();
+      const cameraPosition = new THREE.Vector3();
+      camera.getWorldPosition(cameraPosition);
+
+      // Use the camera position and the touch coordinates to calculate where to place the model
+      raycaster.ray.origin.copy(cameraPosition);
+      raycaster.ray.direction.set(touchX, touchY, 1).normalize();
+
+      // Find the intersection point with the AR scene
+      const intersects = raycaster.intersectObject(sceneEl, true);
+      if (intersects.length > 0) {
+        // Place the model at the intersection point
+        const intersectionPoint = intersects[0].point;
+        model.setAttribute('position', `${intersectionPoint.x} ${intersectionPoint.y} ${intersectionPoint.z}`);
       }
     });
   </script>
