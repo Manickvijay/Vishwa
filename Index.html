@@ -33,56 +33,35 @@
 
   <!-- AR Scene using A-Frame with live camera feed -->
   <a-scene embedded arjs="sourceType: webcam; detectionMode: mono; debugUIEnabled: false;">
-    
+
     <!-- Camera with live video -->
     <a-camera position="0 0 0" id="camera"></a-camera>
 
-    <!-- AR model -->
+    <!-- AR model that appears over the camera feed -->
     <a-entity id="arModel"
               gltf-model="https://raw.githubusercontent.com/Manickvijay/Vishwa/main/ar1.glb"
               scale="0.5 0.5 0.5"
               position="0 0 -3"
-              id="modelToPlace">
+              visible="false">
     </a-entity>
 
   </a-scene>
 
-  <!-- Button to activate AR mode -->
+  <!-- Button to activate AR -->
   <button id="ar-button">View in AR</button>
 
   <script>
     const arButton = document.getElementById('ar-button');
-    const model = document.getElementById('modelToPlace');
-
+    const model = document.getElementById('arModel');
+    
+    // When button is clicked, show the model and start AR
     arButton.addEventListener('click', () => {
       const scene = document.querySelector('a-scene');
-      scene.enterVR(); // Start AR with live camera
-    });
-
-    // Detect touch and place model at the point of touch
-    const camera = document.querySelector('#camera');
-
-    camera.addEventListener('click', (event) => {
-      // Get the touch position on the screen
-      const touchX = event.clientX / window.innerWidth * 2 - 1;
-      const touchY = -(event.clientY / window.innerHeight) * 2 + 1;
-
-      // Raycasting to calculate position in 3D space
-      const raycaster = new THREE.Raycaster();
-      const cameraPosition = new THREE.Vector3();
-      camera.getWorldPosition(cameraPosition);
-
-      // Use the camera position and the touch coordinates to calculate where to place the model
-      raycaster.ray.origin.copy(cameraPosition);
-      raycaster.ray.direction.set(touchX, touchY, 1).normalize();
-
-      // Find the intersection point with the AR scene
-      const intersects = raycaster.intersectObject(sceneEl, true);
-      if (intersects.length > 0) {
-        // Place the model at the intersection point
-        const intersectionPoint = intersects[0].point;
-        model.setAttribute('position', `${intersectionPoint.x} ${intersectionPoint.y} ${intersectionPoint.z}`);
-      }
+      scene.enterAR();  // Activate AR mode with live camera
+      
+      // Make the model visible and adjust position if necessary
+      model.setAttribute('visible', 'true');
+      model.setAttribute('position', '0 0 -3'); // Adjust position as needed
     });
   </script>
 
